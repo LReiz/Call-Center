@@ -1,5 +1,5 @@
 class Operator:
-    def __init__(self, id, initialState) -> None:
+    def __init__(self, id: str, initialState: str) -> None:
         self.id = id
         self.currentCallId = ""
         self.state = initialState

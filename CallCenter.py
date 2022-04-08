@@ -20,7 +20,7 @@ class CallCenter(Protocol):
         connectionMessage = '{ "response": "You are now connect to the Call Center" }'
         self.transport.write(connectionMessage.encode('utf-8'))
     
-    def sendResponseToClient(self, responseMessage: str):
+    def sendResponseToClient(self, responseMessage: str) -> None:
         if responseMessage != "" and responseMessage != None:
             jsonStringResponse = '{{ "response": "{}" }}'.format(responseMessage)
             encodedData = jsonStringResponse.encode('utf-8')
@@ -37,7 +37,7 @@ class CallCenter(Protocol):
                 return op
         return None
 
-    def _findOperatorById(self, operatorId) -> Operator:
+    def _findOperatorById(self, operatorId: str) -> Operator:
         for op in self.operators:
             if op.getOperatorId() == operatorId:
                 return op
@@ -49,14 +49,14 @@ class CallCenter(Protocol):
                 return op
         return None
     
-    def getNextCallInQueue(self) -> str:
+    def _getNextCallInQueue(self) -> str:
         if len(self.callsInQueue) > 0:
             nextCall = self.callsInQueue[0]
             self.callsInQueue.pop(0)
             return nextCall
         return None
 
-    def removeCallFromQueue(self, callId: str) -> None:
+    def _removeCallFromQueue(self, callId: str) -> None:
         for i in range(len(self.callsInQueue)):
             if self.callsInQueue[i] == callId:
                 self.callsInQueue.pop(i)
@@ -64,14 +64,14 @@ class CallCenter(Protocol):
                 return
 
         
-    def redirectCallInQueue(self, operator: Operator) -> None:
+    def _redirectCallInQueue(self, operator: Operator) -> None:
         if operator.getState() == "available":
-            nextCallId = self.getNextCallInQueue()
+            nextCallId = self._getNextCallInQueue()
             if nextCallId != None:
                 responseMessage = operator.ringCall(nextCallId)
                 self.sendResponseToClient(responseMessage)
 
-    def redirectRejectedCall(self, callId: str, rejectingOperator: Operator) -> None:
+    def _redirectRejectedCall(self, callId: str, rejectingOperator: Operator) -> None:
         availableOperator = self._findAvailableOperator(rejectingOperator)
         responseMessage = ""
         if availableOperator != None:
@@ -86,17 +86,17 @@ class CallCenter(Protocol):
             jsonData = json.loads(decodedData)
             if 'command' in jsonData and 'id' in jsonData:
                 if jsonData['command'] == CALL_COMMAND:
-                    self.handleCallRequest(jsonData['id'])
+                    self._handleCallRequest(jsonData['id'])
                 elif jsonData['command'] == ANSWER_COMMAND:
-                    self.handleAnswerRequest(jsonData['id'])
+                    self._handleAnswerRequest(jsonData['id'])
                 elif jsonData['command'] == REJECT_COMMAND:
-                    self.handleRejectRequest(jsonData['id'])
+                    self._handleRejectRequest(jsonData['id'])
                 elif jsonData['command'] == HANGUP_COMMAND:
-                    self.handleHangupRequest(jsonData['id'])
+                    self._handleHangupRequest(jsonData['id'])
         except:
             print('Unable to handle data: ' + decodedData)
 
-    def handleCallRequest(self, callId: str):
+    def _handleCallRequest(self, callId: str) -> None:
         if callId != "":
             operator = self._findAvailableOperator()
             self.sendResponseToClient("Call {} received".format(callId))
@@ -107,14 +107,14 @@ class CallCenter(Protocol):
                 self.sendResponseToClient("Call {} waiting in queue".format(callId))
                 self.callsInQueue.append(callId)
     
-    def handleAnswerRequest(self, operatorId: str):
+    def _handleAnswerRequest(self, operatorId: str) -> None:
         if operatorId != "":
             operator = self._findOperatorById(operatorId)
             if operator != None:
                 responseMessage = operator.answerCall()
                 self.sendResponseToClient(responseMessage)
 
-    def handleRejectRequest(self, operatorId: str):
+    def _handleRejectRequest(self, operatorId: str) -> None:
         if operatorId != "":
             operator = self._findOperatorById(operatorId)
             if operator != None:
@@ -122,15 +122,15 @@ class CallCenter(Protocol):
                 if currentCallId != "":
                     responseMessage = operator.rejectCall()
                     self.sendResponseToClient(responseMessage)
-                    self.redirectRejectedCall(currentCallId, operator)
-                    self.redirectCallInQueue(operator)
+                    self._redirectRejectedCall(currentCallId, operator)
+                    self._redirectCallInQueue(operator)
         
-    def handleHangupRequest(self, callId: str):
+    def _handleHangupRequest(self, callId: str) -> None:
         if callId != "":
             operator = self._findOperatorByCurrentCall(callId)
             if operator != None:
                 responseMessage = operator.hangUpCall()
                 self.sendResponseToClient(responseMessage)
-                self.redirectCallInQueue(operator)
+                self._redirectCallInQueue(operator)
             else:
-                self.removeCallFromQueue(callId)
+                self._removeCallFromQueue(callId)
