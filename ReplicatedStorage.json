@@ -1,0 +1,8 @@
+{
+    "commands" : {
+        "CALL" : "call",
+        "ANSWER" : "answer",
+        "REJECT" : "reject",
+        "HANGUP" : "hangup"
+    }
+}

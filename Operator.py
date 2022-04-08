@@ -19,29 +19,31 @@ class Operator:
     def getCurrentCallId(self) -> str:
         return self.currentCallId
 
-    def ringCall(self, callId: str) -> None:
+    def ringCall(self, callId: str) -> str:
         if self.getState() == "available":
             self._setState("ringing")
             self._setCurrentCall(callId)
-            print("Call {} ringing for operator {}".format(self.getCurrentCallId(), self.getOperatorId()))
+            return "Call {} ringing for operator {}".format(self.getCurrentCallId(), self.getOperatorId())
 
-    def answerCall(self) -> None:
+    def answerCall(self) -> str:
         if self.getState() == "ringing":
             self._setState("busy")
-            print("Call {} answered by operator {}".format(self.getCurrentCallId(), self.getOperatorId()))
+            return "Call {} answered by operator {}".format(self.getCurrentCallId(), self.getOperatorId())
     
-    def rejectCall(self) -> None:
+    def rejectCall(self) -> str:
         if self.getState() == "ringing":
-            print("Call {} rejected by operator {}".format(self.getCurrentCallId(), self.getOperatorId()))
+            responseMessage = "Call {} rejected by operator {}".format(self.getCurrentCallId(), self.getOperatorId())
             self._setState("available")
             self._setCurrentCall("")
+            return responseMessage
 
-    def hangUpCall(self) -> None:
+    def hangUpCall(self) -> str:
         if self.getState() == "busy":
-            print("Call {} finished and operator {} available".format(self.getCurrentCallId(), self.getOperatorId()))
+            responseMessage = "Call {} finished and operator {} available".format(self.getCurrentCallId(), self.getOperatorId())
         elif self.getState() == "ringing":
-            print("Call {} missed".format(self.getCurrentCallId()))
+            responseMessage = "Call {} missed".format(self.getCurrentCallId())
 
         self._setState("available")
         self._setCurrentCall("")
+        return responseMessage
         
