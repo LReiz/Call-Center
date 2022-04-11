@@ -1,0 +1,12 @@
+{
+    "commands" : {
+        "CALL" : "call",
+        "ANSWER" : "answer",
+        "REJECT" : "reject",
+        "HANGUP" : "hangup"
+    },
+    "server" : {
+        "PORT" : 5678,
+        "HOST" : "localhost"
+    }
+}

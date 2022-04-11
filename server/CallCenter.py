@@ -10,10 +10,17 @@ ANSWER_COMMAND = Commands['ANSWER']
 REJECT_COMMAND = Commands['REJECT']
 HANGUP_COMMAND = Commands['HANGUP']
 
+
 class CallCenter(Protocol):
     def __init__(self) -> None:
         self.operators = []
         self.callsInQueue = []
+        self.Commands = {
+            CALL_COMMAND : self._handleCallRequest,
+            ANSWER_COMMAND : self._handleAnswerRequest,
+            REJECT_COMMAND : self._handleRejectRequest,
+            HANGUP_COMMAND : self._handleHangupRequest
+        }
 
     def connectionMade(self):
         print("New client connection")
@@ -85,14 +92,15 @@ class CallCenter(Protocol):
         try:
             jsonData = json.loads(decodedData)
             if 'command' in jsonData and 'id' in jsonData:
-                if jsonData['command'] == CALL_COMMAND:
-                    self._handleCallRequest(jsonData['id'])
-                elif jsonData['command'] == ANSWER_COMMAND:
-                    self._handleAnswerRequest(jsonData['id'])
-                elif jsonData['command'] == REJECT_COMMAND:
-                    self._handleRejectRequest(jsonData['id'])
-                elif jsonData['command'] == HANGUP_COMMAND:
-                    self._handleHangupRequest(jsonData['id'])
+                self.Commands[jsonData['command']](jsonData['id'])
+                # if jsonData['command'] == CALL_COMMAND:
+                #     self._handleCallRequest(jsonData['id'])
+                # elif jsonData['command'] == ANSWER_COMMAND:
+                #     self._handleAnswerRequest(jsonData['id'])
+                # elif jsonData['command'] == REJECT_COMMAND:
+                #     self._handleRejectRequest(jsonData['id'])
+                # elif jsonData['command'] == HANGUP_COMMAND:
+                #     self._handleHangupRequest(jsonData['id'])
         except:
             print('Unable to handle data: ' + decodedData)
 
